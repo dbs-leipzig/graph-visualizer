@@ -24,30 +24,34 @@ public class ColorMapCreator {
         String line;
         while ((line = br.readLine()) != null) {
             String[] lineTokens = LINE_TOKEN_SEPARATOR.split(line);
-            Random randomGenerator = new Random();
-            int r = randomGenerator.nextInt(250);
-            int g = randomGenerator.nextInt(250);
-            int b = randomGenerator.nextInt(250);
-            String color = r + "," + g + "," + b;
+            if (!colorMap.containsKey(Integer.parseInt(lineTokens[0]))) {
 
 
-            colorMap.put(Integer.parseInt(lineTokens[0]), color);
+                Random randomGenerator = new Random();
+                int r = randomGenerator.nextInt(250);
+                int g = randomGenerator.nextInt(250);
+                int b = randomGenerator.nextInt(250);
+                String color = Integer.toString(r) + "," + Integer.toString(g) + "," + Integer.toString(b);
+
+
+                colorMap.put(Integer.parseInt(lineTokens[0]), color);
+
+
+            }
+
 
         }
-
-
     }
-
     public void printColorMap(String destpath) throws IOException {
         BufferedWriter fileWriter = new BufferedWriter(new FileWriter(destpath));
 
-        if(colorMap.isEmpty()){
+        if (colorMap.isEmpty()) {
             System.out.println("colorMap ist leer");
-        }else{
-            for (int i = 0; i < colorMap.size(); i++) {
+        } else {
+            for (Map.Entry<Integer,String> entry: colorMap.entrySet()) {
                 fileWriter.write(String.format("%s %s",
-                        Integer.toString(i),
-                        colorMap.get(i)
+                        entry.getKey(),
+                        entry.getValue()
 
 
                 ));
