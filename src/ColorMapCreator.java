@@ -61,4 +61,10 @@ public class ColorMapCreator {
         fileWriter.close();
 
     }
+
+    public void printDOT(String destpath) throws IOException{
+        BufferedWriter fileWriter = new BufferedWriter(new FileWriter(destpath));
+
+
+    }
 }
