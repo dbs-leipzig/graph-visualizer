@@ -30,9 +30,9 @@ java -jar generated_jarfile.jar
 - -cmd create matched .dot (require: input-graph, pattern, graph-result)
 - -ec calculate edge-cut (require: input-graph, pattern, graph-result)
 
-input-graph: a input graph as adjacency list
-pattern: e.g. \t or " "(spaces) how the adjacency list is structured
-graph-result: an calculated result based on a graph algorithm. For example
+- input-graph: a input graph as adjacency list
+- pattern: e.g. \t or " "(spaces) how the adjacency list is structured
+- graph-result: an calculated result based on a graph algorithm. For example
 the output of an giraph based graph algorithm.
 
 
