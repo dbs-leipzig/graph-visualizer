@@ -247,12 +247,15 @@ public class DotCreator {
         }
       }
     }
+    int countEdges = 0;
     for (Map.Entry<Integer, Map<Integer, Integer>> cuts : edgeCut.entrySet()) {
       Map<Integer, Integer> innerMap = cuts.getValue();
       for (Map.Entry<Integer, Integer> inner : innerMap.entrySet()) {
+        countEdges += inner.getValue();
         System.out.println(cuts.getKey() + " to " + inner.getKey() + " : " +
           inner.getValue());
       }
     }
+    System.out.println("Edges: " + countEdges);
   }
 }
