@@ -25,10 +25,10 @@ mvn clean package
 To use the .jar file you can specify what the tool should do:
 java -jar generated_jarfile.jar
 -h to display the help
--cd create .dot (require: input-graph, pattern)
--cm create a colorMap (require: input-graph, pattern)
--cmd create matched .dot (require: input-graph, pattern, graph-result)
--ec calculate edge-cut (require: input-graph, pattern, graph-result)
+- -cd create .dot (require: input-graph, pattern)
+- -cm create a colorMap (require: input-graph, pattern)
+- -cmd create matched .dot (require: input-graph, pattern, graph-result)
+- -ec calculate edge-cut (require: input-graph, pattern, graph-result)
 
 input-graph: a input graph as adjacency list
 pattern: e.g. \t or " "(spaces) how the adjacency list is structured
