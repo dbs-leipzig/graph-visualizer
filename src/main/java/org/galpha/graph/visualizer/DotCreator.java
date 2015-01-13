@@ -1,10 +1,10 @@
+package org.galpha.graph.visualizer;
+
 import java.io.*;
 import java.util.*;
 import java.util.regex.Pattern;
 
 import static org.apache.commons.lang.math.RandomUtils.nextInt;
-
-
 
 /**
  * Class to create .dot output of the given graph.
@@ -80,13 +80,13 @@ public class DotCreator {
       System.out.println("graph is empty");
     } else {
       for (Map.Entry<Integer, String> entry : colorMap.entrySet()) {
-        fileWriter.write(String
-          .format("%s" + LINE_TOKEN_SEPARATOR + "%s", entry.getKey(),
-            entry.getValue()));
+        fileWriter
+          .write(String.format("%s\t%s", entry.getKey(), entry.getValue()));
         fileWriter.newLine();
       }
     }
     fileWriter.close();
+    System.out.println("CM created");
   }
 
   /**
@@ -95,13 +95,12 @@ public class DotCreator {
    * @param inputGraph destination path to the .dot file
    * @throws IOException
    */
-  public void createDot(String inputGraph, String pattern) throws IOException {
+  public void createDot(String inputGraph) throws IOException {
     if (this.matched) {
       this.fileWriter =
         new BufferedWriter(new FileWriter(inputGraph + "_matched.dot"));
     } else {
       this.fileWriter = new BufferedWriter(new FileWriter(inputGraph + ".dot"));
-      readGraph(inputGraph, pattern);
     }
     if (graph.isEmpty()) {
       System.out.println("Map is empty!");
@@ -124,6 +123,7 @@ public class DotCreator {
       fileWriter.newLine();
     }
     fileWriter.close();
+    System.out.println(".dot created");
   }
 
   /**
@@ -212,12 +212,16 @@ public class DotCreator {
     this.created = true;
   }
 
-  public void countCutEdges(String input, String pattern,
-    String kway_input) throws IOException {
-    readGraph(input, pattern);
-    Map<Integer, Integer> cutEdges = new HashMap<>();
+  /**
+   * Method counts edges between different partitions
+   *
+   * @param partitionedGraph partitioned graph input
+   * @throws IOException
+   */
+  public void calculateEdgeCut(String partitionedGraph) throws IOException {
+    Map<Integer, Map<Integer, Integer>> edgeCut = new HashMap<>();
     Map<Integer, Integer> output = new HashMap<>();
-    BufferedReader br2 = new BufferedReader(new FileReader(kway_input));
+    BufferedReader br2 = new BufferedReader(new FileReader(partitionedGraph));
     String line2;
     while ((line2 = br2.readLine()) != null) {
       String[] lineTokens = LINE_TOKEN_SEPARATOR.split(line2);
@@ -228,18 +232,27 @@ public class DotCreator {
     br2.close();
     for (Map.Entry<Integer, List<Integer>> graphMap : graph.entrySet()) {
       int partition = output.get(graphMap.getKey());
-      if (!cutEdges.containsKey(partition)) {
-        cutEdges.put(partition, 0);
+      if (!edgeCut.containsKey(partition)) {
+        Map<Integer, Integer> innerMap = new HashMap<>();
+        innerMap.put(partition, 0);
+        edgeCut.put(partition, innerMap);
       }
       for (Integer edgeTo : graphMap.getValue()) {
         int partitionTo = output.get(edgeTo);
-        if (partition != partitionTo) {
-          cutEdges.put(partition, cutEdges.get(partition) + 1);
+        Map<Integer, Integer> innerMap = edgeCut.get(partition);
+        if (innerMap.containsKey(partitionTo)) {
+          innerMap.put(partitionTo, innerMap.get(partitionTo) + 1);
+        } else {
+          innerMap.put(partitionTo, 1);
         }
       }
     }
-    for (Map.Entry<Integer, Integer> cuts : cutEdges.entrySet()) {
-      System.out.println(cuts.getKey() + " " + cuts.getValue());
+    for (Map.Entry<Integer, Map<Integer, Integer>> cuts : edgeCut.entrySet()) {
+      Map<Integer, Integer> innerMap = cuts.getValue();
+      for (Map.Entry<Integer, Integer> inner : innerMap.entrySet()) {
+        System.out.println(cuts.getKey() + " to " + inner.getKey() + " : " +
+          inner.getValue());
+      }
     }
   }
 }
