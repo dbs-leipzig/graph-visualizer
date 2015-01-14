@@ -52,19 +52,19 @@ for help.
 
 * Create a colored dot file and a color map.
 
-> java -jar visualiser.jar -ig <input-graph>
+> java -jar visualiser.jar -ig &lt;input-graph&gt;
 
 * Create a colored dot file based on a given color map (for comparison).
 
-> java -jar visualiser.jar -ig <input-graph-file> -cm <color-map-file>
+> java -jar visualiser.jar -ig &lt;input-graph-file&gt; -cm &lt;color-map-file&gt;
 
 * Calculate the edge cut for the given input graph.
 
-> java -jar visualiser.jar -ig <input-graph-file> -ec
+> java -jar visualiser.jar -ig &lt;input-graph-file&gt; -ec
 
 * Read input with multiple values like `0 1 1 2 3 4 5` (index 2 is partition id)
 
-> java -jar visualiser.jar -ig <input-graph> --edge-offset 3 
+> java -jar visualiser.jar -ig &lt;input-graph&gt; --edge-offset 3 
 --partition-token-index 2
 
 
