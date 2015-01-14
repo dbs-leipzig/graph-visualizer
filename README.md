@@ -7,32 +7,64 @@
 
 ##### What it does?
 
-The Graph-Visualizer is a little tool to visualise a given graph.
-The graph as adjacency list will be parsed to .dot format.
-
+The Graph-Visualizer is a little tool to visualise a given partitioned graph.
+The input format is an adjacency list which will be parsed and converted to
+the .dot format.
 
 The Visualizer is able to:
-- parse a adjacency list to .dot format with random generated color for nodes
-- match a given graph with an calculated output
-- calculate edge-cut
+- parse an adjacency list, create a random generated color for each partition
+ and output a .dot file with colored vertices based on their partition
+- calculate edge-cut for the input graph
+
+##### Input format
+
+The adjacency list must contain the information to which partition a vertex
+belongs to. The following line
+
+`0 1 2 3 4 5`
+
+represents a vertex with id 0, a vertex values (1) and four edges (2 3 4 5).
+The vertex value represents the partition id of that vertex.
+
+For some reasons the tool also supports an input format with multiple values
+per vertex. Consider the following line:
+
+`0 1 1 2 3 4 5`
+
+that represents a vertex with id 0, two vertex values (1, 2) and four edges
+(2 3 4 5). In that case, an edge offset and a partition token index have to
+be provided by the user (see examples).
 
 
 ##### How to use?
 
 To use the tool you need to compile an executable .jar file, like this:
-mvn clean package
 
-To use the .jar file you can specify what the tool should do:
-java -jar generated_jarfile.jar
--h to display the help
-- -cd create .dot (require: input-graph, pattern)
-- -cm create a colorMap (require: input-graph, pattern)
-- -cmd create matched .dot (require: input-graph, pattern, graph-result)
-- -ec calculate edge-cut (require: input-graph, pattern, graph-result)
+> mvn clean package
 
-[input-graph]: a input graph as adjacency list
-[pattern]: e.g. \t or " "(spaces) how the adjacency list is structured
-[graph-result]: an calculated result based on a graph algorithm. For example
-the output of an giraph based graph algorithm.
+To use the .jar file you can specify what the tool should do, see:
+
+> java -jar visualiser.jar -h
+
+for help.
+
+##### Examples:
+
+* Create a colored dot file and a color map.
+
+> java -jar visualiser.jar -ig <input-graph>
+
+* Create a colored dot file based on a given color map (for comparison).
+
+> java -jar visualiser.jar -ig <input-graph-file> -cm <color-map-file>
+
+* Calculate the edge cut for the given input graph.
+
+> java -jar visualiser.jar -ig <input-graph-file> -ec
+
+* Read input with multiple values like `0 1 1 2 3 4 5` (index 2 is partition id)
+
+> java -jar visualiser.jar -ig <input-graph> --edge-offset 3 
+--partition-token-index 2
 
 
