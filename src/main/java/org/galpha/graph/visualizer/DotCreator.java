@@ -1,7 +1,16 @@
 package org.galpha.graph.visualizer;
 
-import java.io.*;
-import java.util.*;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import static org.apache.commons.lang.math.RandomUtils.nextInt;
@@ -18,143 +27,187 @@ public class DotCreator {
   private static final String DOT_FILL_COLOR_OPEN = "[fillcolor =\"";
   private static final String DOT_FILL_COLOR_CLOSE = "\"]";
   private static final String DOT_LINE_ENDING = ";";
-  private Map<Integer, String> colorMap;
-  private Map<Integer, List<Integer>> graph;
-  private boolean created = false;
-  private boolean matched = false;
+
+  /**
+   * Used to separate partition id and color in color map file.
+   */
+  private static final Pattern COLOR_MAP_TOKEN_SEPARATOR =
+    Pattern.compile("\t");
+
+  private static final String COLOR_MAP_FILE_POSTFIX = "_cm";
+  private static final String DOT_FILE_POSTFIX = ".dot";
+
+  /**
+   * In-memory adjacency list of the input graph.
+   */
+  private final Map<Integer, List<Integer>> graph;
+  /**
+   * Stores the RGP string for a partition.
+   */
+  private final Map<Integer, String> partitionColorMap;
+  /**
+   * Maps a vertex to a partition according to the input graph.
+   */
+  private final Map<Integer, Integer> vertexPartitionMap;
+  /**
+   * Contains all partition IDs.
+   */
+  private final Set<Integer> partitionIDs;
+
+  private final String inputGraphFile;
+  private final String separatorToken;
+
+  private final int edgeOffset;
+  private final int partitionTokenIndex;
+
   private Pattern LINE_TOKEN_SEPARATOR;
   private BufferedWriter fileWriter;
 
   /**
-   * Constructor
+   * Creates a new DotCreater
+   *
+   * @param inputGraphFile path to the input graph
+   * @param separatorToken separator token used in the input graph
+   * @param edgeOffset     token index where the edge lists starts
    */
-  public DotCreator() {
-    this.colorMap = new HashMap<>();
+  public DotCreator(final String inputGraphFile, final String separatorToken,
+    int edgeOffset, int partitionTokenIndex) {
+    this.inputGraphFile = inputGraphFile;
+    this.separatorToken = separatorToken;
+    this.edgeOffset = edgeOffset;
+    this.partitionTokenIndex = partitionTokenIndex;
+    this.partitionColorMap = new HashMap<>();
     this.graph = new HashMap<>();
+    this.partitionIDs = new HashSet<>();
+    this.vertexPartitionMap = new HashMap<>();
   }
 
   /**
-   * Method to read the given graph
+   * Method to read the input graph into memory.
    *
-   * @param path    path to the given graph
-   * @param pattern how the given graph is structured e.g {tab \t or space " "}
    * @throws IOException
    */
-  public void readGraph(String path, String pattern) throws IOException {
-    BufferedReader br = new BufferedReader(new FileReader((path)));
-    this.LINE_TOKEN_SEPARATOR = Pattern.compile(pattern);
+  public void readGraph() throws IOException {
+    BufferedReader br = new BufferedReader(new FileReader(this.inputGraphFile));
+    this.LINE_TOKEN_SEPARATOR = Pattern.compile(this.separatorToken);
     String line;
     while ((line = br.readLine()) != null) {
       String[] lineTokens = LINE_TOKEN_SEPARATOR.split(line);
-      int ID = Integer.parseInt(lineTokens[0]);
+      // read vertex id
+      int vertexID = Integer.parseInt(lineTokens[0]);
+      // read vertex value (= partition id)
+      int partitionID = Integer.parseInt(lineTokens[this.partitionTokenIndex]);
+      partitionIDs.add(partitionID);
+      vertexPartitionMap.put(vertexID, partitionID);
+      // read edges
       List<Integer> edges = new ArrayList<>();
-      for (int i = 3; i < lineTokens.length; i++) {
+      for (int i = this.edgeOffset; i < lineTokens.length; i++) {
         edges.add(Integer.parseInt(lineTokens[i]));
       }
-      graph.put(ID, edges);
+      graph.put(vertexID, edges);
     }
-    System.out.println("Graph stored");
+    System.out.println("Input graph loaded to memory.");
   }
 
   /**
-   * Method to create a color map
+   * Method to create and store a color map.
    *
-   * @param destpath destination path to the color_map file
    * @throws IOException
    */
-  public void createColorMap(String destpath) throws IOException {
-    BufferedWriter fileWriter =
-      new BufferedWriter(new FileWriter(destpath + "_cm"));
-    for (Map.Entry<Integer, List<Integer>> entry : graph.entrySet()) {
-      if (!colorMap.containsKey(entry.getKey())) {
-        int r = nextInt(250);
-        int g = nextInt(250);
-        int b = nextInt(250);
-        String color = Integer.toString(r) + "," + Integer.toString(g) + "," +
-          Integer.toString(b);
-        colorMap.put(entry.getKey(), color);
-      }
+  public void createColorMap() throws IOException {
+    for (Integer partitionID : partitionIDs) {
+      int r = nextInt(250);
+      int g = nextInt(250);
+      int b = nextInt(250);
+      String color = Integer.toString(r) + "," + Integer.toString(g) + "," +
+        Integer.toString(b);
+      partitionColorMap.put(partitionID, color);
     }
-    this.created = true;
-    if (colorMap.isEmpty()) {
-      System.out.println("graph is empty");
-    } else {
-      for (Map.Entry<Integer, String> entry : colorMap.entrySet()) {
-        fileWriter
-          .write(String.format("%s\t%s", entry.getKey(), entry.getValue()));
-        fileWriter.newLine();
-      }
+    System.out.println("Color map created.");
+    storeColorMap();
+  }
+
+  /**
+   * Stores a color map into a file. Filename is created based on the input
+   * graph filename and a _cm postfix.
+   *
+   * @throws IOException
+   */
+  private void storeColorMap() throws IOException {
+    BufferedWriter fileWriter = new BufferedWriter(
+      new FileWriter(this.inputGraphFile + COLOR_MAP_FILE_POSTFIX));
+
+
+    for (Map.Entry<Integer, String> entry : partitionColorMap.entrySet()) {
+      fileWriter
+        .write(String.format("%s\t%s", entry.getKey(), entry.getValue()));
+      fileWriter.newLine();
     }
     fileWriter.close();
-    System.out.println("CM created");
+    System.out.println("Color map stored.");
   }
+
+  /**
+   * Loads a color map from a given file.
+   *
+   * @param colorMapFile filename where color map is stored
+   * @throws IOException
+   */
+  public void loadColorMap(final String colorMapFile) throws IOException {
+    BufferedReader br = new BufferedReader(new FileReader(colorMapFile));
+    String line;
+    while ((line = br.readLine()) != null) {
+      String tokens[] = COLOR_MAP_TOKEN_SEPARATOR.split(line);
+      this.partitionColorMap.put(Integer.parseInt(tokens[0]), tokens[1]);
+    }
+    br.close();
+    System.out.println("Color map loaded from file.");
+  }
+
 
   /**
    * Write the .dot format of the given graph
    *
-   * @param inputGraph destination path to the .dot file
    * @throws IOException
    */
-  public void createDot(String inputGraph) throws IOException {
-    if (this.matched) {
-      this.fileWriter =
-        new BufferedWriter(new FileWriter(inputGraph + "_matched.dot"));
-    } else {
-      this.fileWriter = new BufferedWriter(new FileWriter(inputGraph + ".dot"));
+  public void createDot() throws IOException {
+    this.fileWriter = new BufferedWriter(
+      new FileWriter(this.inputGraphFile + DOT_FILE_POSTFIX));
+
+    // digraph header
+    fileWriter.write(
+      String.format("%s %s %s", DOT_DIGRAPH_HEADER, "dg", DOT_BLOCK_OPEN));
+    fileWriter.newLine();
+
+    // vertices
+    for (Map.Entry<Integer, List<Integer>> graphEntry : graph.entrySet()) {
+      writeVertex(graphEntry.getKey());
     }
-    if (graph.isEmpty()) {
-      System.out.println("Map is empty!");
-      this.fileWriter.close();
-    } else {
-      // digraph header
-      fileWriter.write(
-        String.format("%s %s %s", DOT_DIGRAPH_HEADER, "dg", DOT_BLOCK_OPEN));
-      fileWriter.newLine();
-      for (Map.Entry<Integer, List<Integer>> graphEntry : graph.entrySet()) {
-        // nodes
-        writeNodes(graphEntry.getKey(), inputGraph);
-      }
-      for (Map.Entry<Integer, List<Integer>> graphEntry : graph.entrySet()) {
-        //edges
-        writeEdges(graphEntry.getKey(), graphEntry.getValue());
-      }
-      // digraph footer
-      fileWriter.write(DOT_BLOCK_CLOSE);
-      fileWriter.newLine();
+    // edges
+    for (Map.Entry<Integer, List<Integer>> graphEntry : graph.entrySet()) {
+      writeEdges(graphEntry.getKey(), graphEntry.getValue());
     }
+    // digraph footer
+    fileWriter.write(DOT_BLOCK_CLOSE);
+    fileWriter.newLine();
+
     fileWriter.close();
     System.out.println(".dot created");
   }
 
+
   /**
    * Writes the nodes
    *
-   * @param node   vertex
-   * @param cmPath path to the given color map
+   * @param vertexID vertex
    * @throws IOException
    */
-  private void writeNodes(int node, String cmPath) throws IOException {
-    if (this.created) { //if the color map was created just now
-      fileWriter.write(String
-        .format("\t%s %s%s%s%s", node, DOT_FILL_COLOR_OPEN, colorMap.get(node),
-          DOT_FILL_COLOR_CLOSE, DOT_LINE_ENDING));
-      fileWriter.newLine();
-    } else {//if the colorMap exist in a file
-      BufferedReader br = new BufferedReader(new FileReader((cmPath + "_cm")));
-      String line;
-      while ((line = br.readLine()) != null) {
-        String[] lineTokens = LINE_TOKEN_SEPARATOR.split(line);
-        int ID = Integer.parseInt(lineTokens[0]);
-        String color = lineTokens[1];
-        colorMap.put(ID, color);
-      }
-      //writes
-      //0 [fillcolor ="r,g,b"];
-      fileWriter.write(String
-        .format("\t%s %s %s %s%s", node, DOT_FILL_COLOR_OPEN,
-          colorMap.get(node), DOT_FILL_COLOR_CLOSE, DOT_LINE_ENDING));
-      fileWriter.newLine();
-    }
+  private void writeVertex(int vertexID) throws IOException {
+    fileWriter.write(String
+      .format("\t%s %s%s%s%s", vertexID, DOT_FILL_COLOR_OPEN,
+        partitionColorMap.get(vertexPartitionMap.get(vertexID)),
+        DOT_FILL_COLOR_CLOSE, DOT_LINE_ENDING));
+    fileWriter.newLine();
   }
 
   /**
@@ -176,86 +229,21 @@ public class DotCreator {
   }
 
   /**
-   * Matches the start graph and the calculated partitioning input
-   *
-   * @param partitionedInput partitioning
-   * @param cmPath
-   * @throws IOException
-   */
-  public void matchGraph(String graphInput, String pattern,
-    String partitionedInput, String cmPath) throws IOException {
-    readGraph(graphInput, pattern);
-    this.matched = true;
-    BufferedReader br = new BufferedReader(new FileReader((cmPath + "_cm")));
-    Map<Integer, String> oldCM = new HashMap<>();
-    String line;
-    while ((line = br.readLine()) != null) {
-      String[] lineTokens = LINE_TOKEN_SEPARATOR.split(line);
-      int ID = Integer.parseInt(lineTokens[0]);
-      String color = lineTokens[1];
-      oldCM.put(ID, color);
-    }
-    br.close();
-    Map<Integer, Integer> output = new HashMap<>();
-    BufferedReader br2 = new BufferedReader(new FileReader(partitionedInput));
-    String line2;
-    while ((line2 = br2.readLine()) != null) {
-      String[] lineTokens = LINE_TOKEN_SEPARATOR.split(line2);
-      int ID = Integer.parseInt(lineTokens[0]);
-      int value = Integer.parseInt(lineTokens[1]);
-      output.put(ID, value);
-    }
-    br2.close();
-    for (Map.Entry<Integer, Integer> entry : output.entrySet()) {
-      colorMap.put(entry.getKey(), oldCM.get(entry.getValue()));
-    }
-    this.created = true;
-  }
-
-  /**
    * Method counts edges between different partitions
    *
-   * @param partitionedGraph partitioned graph input
    * @throws IOException
    */
-  public void calculateEdgeCut(String partitionedGraph) throws IOException {
-    Map<Integer, Map<Integer, Integer>> edgeCut = new HashMap<>();
-    Map<Integer, Integer> output = new HashMap<>();
-    BufferedReader br2 = new BufferedReader(new FileReader(partitionedGraph));
-    String line2;
-    while ((line2 = br2.readLine()) != null) {
-      String[] lineTokens = LINE_TOKEN_SEPARATOR.split(line2);
-      int ID = Integer.parseInt(lineTokens[0]);
-      int value = Integer.parseInt(lineTokens[1]);
-      output.put(ID, value);
-    }
-    br2.close();
-    for (Map.Entry<Integer, List<Integer>> graphMap : graph.entrySet()) {
-      int partition = output.get(graphMap.getKey());
-      if (!edgeCut.containsKey(partition)) {
-        Map<Integer, Integer> innerMap = new HashMap<>();
-        innerMap.put(partition, 0);
-        edgeCut.put(partition, innerMap);
-      }
-      for (Integer edgeTo : graphMap.getValue()) {
-        int partitionTo = output.get(edgeTo);
-        Map<Integer, Integer> innerMap = edgeCut.get(partition);
-        if (innerMap.containsKey(partitionTo)) {
-          innerMap.put(partitionTo, innerMap.get(partitionTo) + 1);
-        } else {
-          innerMap.put(partitionTo, 1);
+  public void calculateEdgeCut() throws IOException {
+    long edgeCut = 0;
+
+    for (Map.Entry<Integer, List<Integer>> vertex : graph.entrySet()) {
+      int vertexPartition = vertexPartitionMap.get(vertex.getKey());
+      for (Integer neighbourID : vertex.getValue()) {
+        if (vertexPartitionMap.get(neighbourID) != vertexPartition) {
+          edgeCut++;
         }
       }
     }
-    int countEdges = 0;
-    for (Map.Entry<Integer, Map<Integer, Integer>> cuts : edgeCut.entrySet()) {
-      Map<Integer, Integer> innerMap = cuts.getValue();
-      for (Map.Entry<Integer, Integer> inner : innerMap.entrySet()) {
-        countEdges += inner.getValue();
-        System.out.println(cuts.getKey() + " to " + inner.getKey() + " : " +
-          inner.getValue());
-      }
-    }
-    System.out.println("Edges: " + countEdges);
+    System.out.println("Edge cut: " + edgeCut);
   }
 }

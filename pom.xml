@@ -44,7 +44,7 @@
                     <archive>
                         <manifest>
                             <mainClass>
-                                org.galpha.graph.visualizer.Main
+                                org.galpha.graph.visualizer.Visualiser
                             </mainClass>
                         </manifest>
                     </archive>
