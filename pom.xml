@@ -9,6 +9,8 @@
     <version>1.0-SNAPSHOT</version>
 
 
+
+
     <dependencies>
         <dependency>
             <groupId>commons-cli</groupId>
@@ -20,7 +22,16 @@
             <artifactId>commons-lang</artifactId>
             <version>2.6</version>
         </dependency>
+        <dependency>
+            <groupId>org.gephi</groupId>
+            <artifactId>gephi-tool</artifactId>
+            <version>0.9</version>
+        </dependency>
     </dependencies>
+
+
+
+
     <build>
         <plugins>
             <plugin>
