@@ -14,7 +14,15 @@ import org.gephi.io.importer.api.EdgeDefault;
 import org.gephi.io.importer.api.ImportController;
 import org.gephi.io.processor.plugin.DefaultProcessor;
 import org.gephi.layout.plugin.AutoLayout;
+import org.gephi.layout.plugin.force.StepDisplacement;
 import org.gephi.layout.plugin.forceAtlas2.ForceAtlas2;
+import org.gephi.layout.plugin.openord.OpenOrdLayout;
+import org.gephi.preview.api.PreviewController;
+import org.gephi.preview.api.PreviewModel;
+import org.gephi.preview.api.PreviewProperties;
+import org.gephi.preview.api.PreviewProperty;
+import org.gephi.preview.presets.BlackBackground;
+import org.gephi.preview.types.EdgeColor;
 import org.gephi.project.api.ProjectController;
 import org.gephi.project.api.Workspace;
 import org.openide.util.Lookup;
@@ -23,6 +31,7 @@ import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 
 /**
  *
@@ -33,6 +42,9 @@ public class PNGCreator {
   private GraphModel graphModel;
   private AttributeModel attributeModel;
   private AttributeColumn color;
+
+  private static final Pattern comma = Pattern.compile(",");
+
 
   public PNGCreator(String inputDot) {
     this.inputDot = inputDot;
@@ -63,11 +75,24 @@ public class PNGCreator {
   }
 
   private void computeLayout() {
+
+
     AutoLayout autoLayout = new AutoLayout(10, TimeUnit.SECONDS);
     autoLayout.setGraphModel(graphModel);
     ForceAtlas2 firstLayout = new ForceAtlas2(null);
     autoLayout.addLayout(firstLayout, 1f);
     autoLayout.execute();
+
+
+//    AutoLayout autoLayout = new AutoLayout(10, TimeUnit.SECONDS);
+//    autoLayout.setGraphModel(graphModel);
+//    OpenOrdLayout firstLayout = new OpenOrdLayout(null);
+//    firstLayout.setRandSeed((long) 575546861);
+//    System.out.println("=== seed: " + firstLayout.getRandSeed());
+//    firstLayout.setEdgeCut(0.5f);
+//    firstLayout.setNumIterations(500);
+//    autoLayout.addLayout(firstLayout, 1f);
+//    autoLayout.execute();
   }
 
   private void setNodeColors() {
@@ -87,8 +112,8 @@ public class PNGCreator {
       Node node = var15[var16];
       String colorString = (String) node.getNodeData().getAttributes()
         .getValue(this.color.getIndex());
-      if (colorString.contains(",")) {
-        String[] RGB = colorString.split(",");
+      if (colorString.contains(comma.pattern())) {
+        String[] RGB = comma.split(colorString);
         node.getNodeData().setR(Float.valueOf(RGB[0]) / 255.0F);
         node.getNodeData().setG(Float.valueOf(RGB[1]) / 255.0F);
         node.getNodeData().setB(Float.valueOf(RGB[2]) / 255.0F);
@@ -102,6 +127,14 @@ public class PNGCreator {
   }
 
   private void exportPNG() {
+
+    PreviewModel model =
+      Lookup.getDefault().lookup(PreviewController.class).getModel();
+
+    PreviewProperties prop = model.getProperties();
+    prop.putValue(PreviewProperty.EDGE_CURVED, false);
+    prop.putValue(PreviewProperty.EDGE_THICKNESS, 0.5f);
+
     ExportController ec = Lookup.getDefault().lookup(ExportController.class);
     String destPath = inputDot.replace(".dot", ".png");
     try {

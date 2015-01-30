@@ -27,6 +27,11 @@
             <artifactId>gephi-tool</artifactId>
             <version>0.9</version>
         </dependency>
+        <dependency>
+            <groupId>org.openord</groupId>
+            <artifactId>openord-layout</artifactId>
+            <version>1.0</version>
+        </dependency>
     </dependencies>
 
 
