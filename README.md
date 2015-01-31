@@ -5,16 +5,6 @@
 * Maven 3
 * JDK 7 (Oracle or OpenJDK)
 
-##### How to install?
-
-Install openord.jar out of the requirements directory into the local maven
-repository.
-
-Like this:
-mvn install:install-file -Dfile=org-gephi-layout-plugin-openord.jar
--DgroupId=org.openord -DartifactId=openord-layout -Dversion=1.0 -Dpackaging=jar
-
-
 ##### What it does?
 
 The Graph-Visualizer is a little tool to visualise a given partitioned graph.
@@ -47,6 +37,14 @@ be provided by the user (see examples).
 
 
 ##### How to use?
+
+To compile an executable .jar file you need to install the openord.jar out of
+ the requirements into the local maven repository
+
+ Like this:
+
+>mvn install:install-file -Dfile=org-gephi-layout-plugin-openord.jar
+ -DgroupId=org.openord -DartifactId=openord-layout -Dversion=1.0 -Dpackaging=jar
 
 To use the tool you need to compile an executable .jar file, like this:
 
