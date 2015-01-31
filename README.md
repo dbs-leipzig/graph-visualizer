@@ -63,7 +63,7 @@ for help.
 
 * Create a .png file based on a given .dot
 
-> java -jar visualiser.jar -cp &lt;input-dot&gt
+> java -jar visualiser.jar -cp &lt;input-dot&gt;
 
 * Calculate the edge cut for the given input graph.
 
