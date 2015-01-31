@@ -5,8 +5,15 @@
 * Maven 3
 * JDK 7 (Oracle or OpenJDK)
 
-Install both .jar's out of the requirements directory into the local maven
+##### How to install?
+
+Install openord.jar out of the requirements directory into the local maven
 repository.
+
+Like this:
+mvn install:install-file -Dfile=org-gephi-layout-plugin-openord.jar
+-DgroupId=org.openord -DartifactId=openord-layout -Dversion=1.0 -Dpackaging=jar
+
 
 ##### What it does?
 
