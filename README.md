@@ -5,6 +5,9 @@
 * Maven 3
 * JDK 7 (Oracle or OpenJDK)
 
+Install both .jar's out of the requirements directory into the local maven
+repository.
+
 ##### What it does?
 
 The Graph-Visualizer is a little tool to visualise a given partitioned graph.
@@ -57,6 +60,10 @@ for help.
 * Create a colored dot file based on a given color map (for comparison).
 
 > java -jar visualiser.jar -ig &lt;input-graph-file&gt; -cm &lt;color-map-file&gt;
+
+* Create a .png file based on a given .dot
+
+> java -jar visualiser.jar -cp &lt;input-dot&gt
 
 * Calculate the edge cut for the given input graph.
 

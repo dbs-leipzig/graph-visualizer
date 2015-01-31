@@ -77,22 +77,21 @@ public class PNGCreator {
   private void computeLayout() {
 
 
-    AutoLayout autoLayout = new AutoLayout(10, TimeUnit.SECONDS);
-    autoLayout.setGraphModel(graphModel);
-    ForceAtlas2 firstLayout = new ForceAtlas2(null);
-    autoLayout.addLayout(firstLayout, 1f);
-    autoLayout.execute();
-
-
 //    AutoLayout autoLayout = new AutoLayout(10, TimeUnit.SECONDS);
 //    autoLayout.setGraphModel(graphModel);
-//    OpenOrdLayout firstLayout = new OpenOrdLayout(null);
-//    firstLayout.setRandSeed((long) 575546861);
-//    System.out.println("=== seed: " + firstLayout.getRandSeed());
-//    firstLayout.setEdgeCut(0.5f);
-//    firstLayout.setNumIterations(500);
+//    ForceAtlas2 firstLayout = new ForceAtlas2(null);
 //    autoLayout.addLayout(firstLayout, 1f);
 //    autoLayout.execute();
+
+
+    AutoLayout autoLayout = new AutoLayout(10, TimeUnit.SECONDS);
+    autoLayout.setGraphModel(graphModel);
+    OpenOrdLayout firstLayout = new OpenOrdLayout(null);
+    firstLayout.setRandSeed((long) 575546861);
+    firstLayout.setEdgeCut(0.5f);
+    firstLayout.setNumIterations(500);
+    autoLayout.addLayout(firstLayout, 1f);
+    autoLayout.execute();
   }
 
   private void setNodeColors() {
