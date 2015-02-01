@@ -15,7 +15,7 @@ public class Visualiser {
   public static final String COLOR_MAP = "cm";
   public static final String EDGE_OFFSET = "eo";
   public static final String PARTITION_TOKEN_INDEX = "pti";
-  public static final String PICTURE = "cp";
+  public static final String CREATE_PNG = "cp";
 
   public static final String SEPARATOR_TOKEN = "st";
   public static final String COUNT_EDGE_CUT = "ec";
@@ -37,8 +37,8 @@ public class Visualiser {
     OPTIONS.addOption(PARTITION_TOKEN_INDEX, "partition-token-index", true,
       "Token index of the partition id in an input line (default: " +
         DEFAULT_PARTITION_TOKEN_INDEX + ")");
-    OPTIONS.addOption(PICTURE, "create-png", true, "Create  " +
-      "Graph as .PNG file");
+    OPTIONS.addOption(CREATE_PNG, "create-png", true, "Create  " +
+      ".png file of a given .dot file");
     OPTIONS.addOption(SEPARATOR_TOKEN, "separator-token", true,
       "Value separator token used in input graph");
     OPTIONS.addOption(COUNT_EDGE_CUT, "edge-cut", false,
@@ -61,8 +61,8 @@ public class Visualiser {
     }
     performSanityCheck(cmd);
 
-    if (cmd.hasOption(PICTURE)) {
-      PNGCreator pg = new PNGCreator(cmd.getOptionValue(PICTURE));
+    if (cmd.hasOption(CREATE_PNG)) {
+      PNGCreator pg = new PNGCreator(cmd.getOptionValue(CREATE_PNG));
       pg.createPNG();
       System.exit(0);
     }
@@ -112,7 +112,7 @@ public class Visualiser {
    * @param cmd command line
    */
   private static void performSanityCheck(final CommandLine cmd) {
-    if(!cmd.hasOption(PICTURE)){
+    if(!cmd.hasOption(CREATE_PNG)){
       if (!cmd.hasOption(INPUT_GRAPH)) {
         throw new IllegalArgumentException("Define input Path(-ig)");
       }

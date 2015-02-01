@@ -76,14 +76,7 @@ public class PNGCreator {
 
   private void computeLayout() {
 
-
-//    AutoLayout autoLayout = new AutoLayout(10, TimeUnit.SECONDS);
-//    autoLayout.setGraphModel(graphModel);
-//    ForceAtlas2 firstLayout = new ForceAtlas2(null);
-//    autoLayout.addLayout(firstLayout, 1f);
-//    autoLayout.execute();
-
-
+    //Todo: find better settings and make layout deterministic
     AutoLayout autoLayout = new AutoLayout(10, TimeUnit.SECONDS);
     autoLayout.setGraphModel(graphModel);
     OpenOrdLayout firstLayout = new OpenOrdLayout(null);
